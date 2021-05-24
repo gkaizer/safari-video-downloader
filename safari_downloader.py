@@ -7,28 +7,30 @@ import os
 import subprocess
 import unicodedata
 import string
+import re
 
 import config
 # Create a config.py file with the following content:
 # class Config:
-#     URL = 'https://www.safaribooksonline.com/library/view/strata-data-conference/9781491985373/'
-#     DOMAIN = 'https://www.safaribooksonline.com'
-#     OUTPUT_FOLDER = 'D:\\Strata Data Conference 2017 Singapore'
+#     URL = 'https://learning.oreilly.com/videos/complete-modern-c/9781800566668/'
+#     DOMAIN = 'https://learning.oreilly.com'
+#     OUTPUT_FOLDER = 'D:/Complete Modern C++'
 #     USERNAME = 'your_email_address'
 #     PASSWORD = 'your_password'
 #     DOWNLOADER = './youtube-dl.exe' # Please download from https://github.com/rg3/youtube-dl
 
 class SafariDownloader:
-    def __init__(self, url, output_folder, username, password, domain='https://www.safaribooksonline.com', downloader_path='./youtube-dl.exe'):
+    def __init__(self, url, output_folder, username, password, domain='https://learning.oreilly.com', downloader_path='./youtube-dl.exe'):
+        self.url = url
         self.output_folder = output_folder
         self.username = username
         self.password = password
         self.domain = domain
         self.downloader_path = downloader_path
 
-        req = requests.get(url)
+        req = requests.get(self.url)
         soup = BeautifulSoup(req.text, 'html.parser')
-        self.topics = soup.find_all('li', class_='toc-level-1') # top-level topic titles
+        self.topics = soup.find_all('li', class_=re.compile('toc-level-1')) # top-level topic titles
         # Update youtube-dl first
         subprocess.run([self.downloader_path, "-U"])
 
@@ -42,7 +44,8 @@ class SafariDownloader:
 
     def download(self):
         for topic in self.topics:
-            topic_name = topic.a.text
+            #topic_name = topic.a.text
+            topic_name = self.validify(topic.a.text)
             # Creating folder to put the videos in
             save_folder = '{}/{}'.format(self.output_folder, topic_name)
             os.makedirs(save_folder, exist_ok=True)
@@ -53,7 +56,12 @@ class SafariDownloader:
             for index, video in enumerate(topic.ol.find_all('a')):
                 video_name = '{:03d} - {}'.format(index + 1, video.text)
                 video_name = self.validify(video_name)
-                video_url = self.domain + video.get('href')
+                # video_url = self.domain + video.get('href')
+                name = video.get('href')
+                if self.url.endswith('/'):
+                    self.url = self.url.rstrip('/')
+                video_url = self.url + '/' + name[name.rindex('/') + 1:].replace('chapter', self.url[self.url.rindex('/') + 1:])
+                video_url = video_url[:video_url.rindex('-')] + '/'
                 video_out = '{}/{}.mp4'.format(save_folder, video_name)
                 # Check if file already exists
                 if os.path.isfile(video_out):
@@ -62,6 +70,7 @@ class SafariDownloader:
                 print("Downloading {} ...".format(video_name))
                 subprocess.run([self.downloader_path, "-u", self.username, "-p", self.password, "--verbose", "--output", video_out, video_url])
 
+                
 if __name__ == '__main__':
     app_config = config.Config
     downloader = SafariDownloader(url=app_config.URL, output_folder=app_config.OUTPUT_FOLDER,
