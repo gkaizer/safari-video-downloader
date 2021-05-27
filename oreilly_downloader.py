@@ -60,9 +60,11 @@ class SafariDownloader:
                 name = video.get('href')
                 if self.url.endswith('/'):
                     self.url = self.url.rstrip('/')
-                ###  IF IT CONTAINS LINKS WHICH END WITH .html #####
                 video_url = self.url + '/' + self.url[self.url.rindex('/') + 1:] + '-' + 'video'
-                video_url = video_url + name[name.rfind("video") + 5: name.rfind('.')]
+                video_url = video_url + topic_name[topic_name.find('Chapter ') + 8: topic_name.find('Chapter ') + 10].strip() + '_' + str(index+1)
+                ###  IF IT CONTAINS LINKS WHICH END WITH .html #####
+                #video_url = self.url + '/' + self.url[self.url.rindex('/') + 1:] + '-' + 'video'
+                #video_url = video_url + name[name.rfind("video") + 5: name.rfind('.')]
                 ###  IF IT CONTAINS LINKS WHICH HAVE AN INDEX AFTER video_n_n ####
                 #video_url = self.url + '/' + self.url[self.url.rindex('/') + 1:] + '-' + 'video'
                 #video_url = video_url + name[name.rfind("video") + 5: name.rfind('-')]
