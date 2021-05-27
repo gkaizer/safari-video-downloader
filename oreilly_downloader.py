@@ -60,8 +60,12 @@ class SafariDownloader:
                 name = video.get('href')
                 if self.url.endswith('/'):
                     self.url = self.url.rstrip('/')
+                ###  IF IT CONTAINS LINKS WHICH END WITH .html #####
                 video_url = self.url + '/' + self.url[self.url.rindex('/') + 1:] + '-' + 'video'
                 video_url = video_url + name[name.rfind("video") + 5: name.rfind('.')]
+                ###  IF IT CONTAINS LINKS WHICH HAVE AN INDEX AFTER video_n_n ####
+                #video_url = self.url + '/' + self.url[self.url.rindex('/') + 1:] + '-' + 'video'
+                #video_url = video_url + name[name.rfind("video") + 5: name.rfind('-')]
                 video_out = '{}/{}.mp4'.format(save_folder, video_name)
                 # Check if file already exists
                 if os.path.isfile(video_out):
